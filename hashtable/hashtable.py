@@ -23,7 +23,11 @@ class HashTable:
     def __init__(self, capacity):
         # Your code here
         self.capacity = capacity
+
+        # initial size of hash table
         self.storage = [None] * (self.capacity)
+
+        # amount of stored info in hash table
         self.count = 0
         
 
@@ -38,6 +42,8 @@ class HashTable:
         Implement this.
         """
         # Your code here
+
+        # indicates the number of slots available in hash table
         return len(self.storage)
 
 
@@ -54,8 +60,10 @@ class HashTable:
         
 
         if not self.resize:
+            # check load factor, if bigger than given value, double capacity
             if load_factor > 0.7:
                 self.resize(int(self.capacity * 2))
+            # check load factor, if bigger than given value, half the capacity
             elif load_factor < 0.2 and self.capacity != MIN_CAPACITY:
                 self.resize(int(self.capacity / 2))
 
@@ -80,10 +88,12 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
-        hashed_ = 5381
+
+        # hashing function found online
+        hashed = 5381
         for c in key:
-            hashed_ = (hashed_*33) + ord(c)
-        return hashed_
+            hashed = (hashed * 33) + ord(c)
+        return hashed
 
 
     def hash_index(self, key):
@@ -92,6 +102,9 @@ class HashTable:
         between within the storage capacity of the hash table.
         """
         #return self.fnv1(key) % self.capacity
+
+        # determines index by hash function modulo capacity, the remainder is the index
+        # on which the data will be stored
         return self.djb2(key) % self.capacity
 
     def put(self, key, value):
@@ -108,6 +121,7 @@ class HashTable:
         # with collisions/without linked list:
         # idx = self.hash_index(key)
         # self.storage[idx] = value
+
 
         slot = self.hash_index(key)
         cur = self.storage[slot]
@@ -156,16 +170,18 @@ class HashTable:
         index = self.hash_index(key)
         cur = self.storage[index]
 
-        # if value at index is empty
+        # if value at index is empty then return
         if cur is None:
             return
 
         # else
         while cur:
             # if there is a same key, update with its next value
-            # reduce the entry count
+           
             if cur.key == key:
+                # change pointer to another index
                 self.storage[index] = cur.next
+                 # reduce the slot count
                 self.count -= 1
             cur = cur.next
 
@@ -213,19 +229,28 @@ class HashTable:
         Implement this.
         """
         # Your code here
+
+        # create new instance of HashTable
+        # new capacity determined by get_load_factor
         new_table = HashTable(new_capacity)
 
+        
         for n in self.storage:
+            # checks if it exists and it is the last
             if n != None and n.next == None:
+                #  create new table and distribute data to match new size
                 new_table.put(n.key, n.value)
             else:
                 curr_node = n
                 while curr_node != None:
+                    # while there are available slots, rehash the key/value pairs
                     new_table.put(curr_node.key, curr_node.value)
+                    # once those are filled, set current node to the next to fill
                     curr_node = curr_node.next
 
-        # Set the properties of the class to the new Instance table       
 
+        # Set the properties of the class to the new Instance table with the
+        # new properties      
         self.capacity = new_table.capacity
         self.storage = new_table.storage
         self.count = new_table.count
