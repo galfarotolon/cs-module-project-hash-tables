@@ -25,6 +25,7 @@ class HashTable:
         self.capacity = capacity
         self.storage = [None] * (self.capacity)
         self.count = 0
+        
 
     def get_num_slots(self):
         """
@@ -47,6 +48,18 @@ class HashTable:
         Implement this.
         """
         # Your code here
+
+        # load factor formula is number of items in hash table / total number of slots
+        load_factor = self.count/self.capacity
+        
+
+        if not self.resize:
+            if load_factor > 0.7:
+                self.resize(int(self.capacity * 2))
+            elif load_factor < 0.2 and self.capacity != MIN_CAPACITY:
+                self.resize(int(self.capacity / 2))
+
+        return load_factor
 
 
 
@@ -90,9 +103,39 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        
 
-        idx = self.hash_index(key)
-        self.storage[idx] = value
+        # with collisions/without linked list:
+        # idx = self.hash_index(key)
+        # self.storage[idx] = value
+
+        slot = self.hash_index(key)
+        cur = self.storage[slot]
+
+        # if cur exists
+        if cur:
+            # loop through the list by checking cur.next each time
+            # and also see if cur.key is the same key that is being searched
+            while cur.next != None and cur.key != key:
+                cur = cur.next
+            # if there is already the key, overwrite the value
+            if cur.key == key:
+                cur.value = value
+            # if key doesn't exist 
+            # make a new entry with cur.next
+            # increase count by 1
+            else:
+                cur.next = HashTableEntry(key, value)
+                self.count += 1
+
+        # else, make new entry
+        # increase count
+        else:
+            self.storage[slot] = HashTableEntry(key, value)
+            self.count += 1
+   
+
+  
 
 
 
@@ -105,8 +148,30 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        idx = self.hash_index(key)
-        self.storage[idx] = None
+        # pass key to hash method 
+        # idx = self.hash_index(key)
+        # # and set it as None(default value)
+        # self.storage[idx] = None
+
+        index = self.hash_index(key)
+        cur = self.storage[index]
+
+        # if value at index is empty
+        if cur is None:
+            return
+
+        # else
+        while cur:
+            # if there is a same key, update with its next value
+            # reduce the entry count
+            if cur.key == key:
+                self.storage[index] = cur.next
+                self.count -= 1
+            cur = cur.next
+
+        return None
+
+
 
 
     def get(self, key):
@@ -118,8 +183,26 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        idx = self.hash_index(key)
-        return self.storage[idx]
+        # idx = self.hash_index(key)
+        # return self.storage[idx]
+
+        slot = self.hash_index(key)
+        cur = self.storage[slot]
+        # if cur exists
+        while cur:
+            # check for the current key
+            # if the current key exists, return the value of it
+            if cur.key == key:
+                return cur.value
+
+            # else, keep searching by checking the next, and so on
+            cur = cur.next
+
+        # If the value that is being looked for is not there, return None
+        return None
+
+
+
 
 
     def resize(self, new_capacity):
@@ -130,6 +213,24 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        new_table = HashTable(new_capacity)
+
+        for n in self.storage:
+            if n != None and n.next == None:
+                new_table.put(n.key, n.value)
+            else:
+                curr_node = n
+                while curr_node != None:
+                    new_table.put(curr_node.key, curr_node.value)
+                    curr_node = curr_node.next
+
+        # Set the properties of the class to the new Instance table       
+
+        self.capacity = new_table.capacity
+        self.storage = new_table.storage
+        self.count = new_table.count
+
+   
 
 
 
