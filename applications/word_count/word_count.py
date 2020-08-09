@@ -1,5 +1,21 @@
 def word_count(s):
     # Your code here
+    characters_to_ignore = '" : ; , . - + = / \ | [ ] { } ( ) * ^ &'.split(" ")
+    for character in characters_to_ignore:
+        s = s.replace(character, "")
+
+    d = {}
+
+    words = s.split()
+
+    for word in words:
+        word = word.lower()
+        if word in d:
+            d[word] += 1
+        else:
+            d[word] = 1
+    
+    return d
 
 
 
